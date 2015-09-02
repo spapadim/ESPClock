@@ -1,0 +1,292 @@
+<html>
+
+<head>
+<title>ESPClock Settings</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+</head>
+
+<body>
+<nav class="navbar navbar-fixed-top navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">ESPClock Settings</a>
+    </div>
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+<div class="container" style="padding-top: 80px;">
+
+<form class="form-horizontal" action="/update" method="get">
+
+  <!-- Network settings section -->
+  <div class="panel panel-default">
+    <div class="panel-heading"><h2 class="panel-title">Network</h2></div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="ssid">SSID</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter WiFi SSID" id="ssid" name="ssid" maxlength="31" data-bind="value: ssid">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="password">Password</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" placeholder="Enter WiFi password" id="password" name="password" maxlength="63" data-bind="value: password">
+            </div>
+          </div>
+        </div> <!-- col -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="hostname">Hostname</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter hostname" id="hostname" name="hostname" maxlength="31" data-bind="value: hostname">
+            </div>
+          </div>
+        </div> <!-- col -->
+      </div> <!-- row -->
+    </div> <!-- panel-body -->
+  </div> <!-- panel -->
+
+  <!-- Location/time section -->
+  <div class="panel panel-default">
+    <div class="panel-heading"><h2 class="panel-title">Location &amp; time</h2></div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="tz">Timezone</label>
+            <div class="col-sm-8">
+              <select class="form-control" id="utc-offset", name="utc-offset" data-bind="value: utcOffset">
+                <option value="-14400">US EDT</option>
+                <option value="-18000">US EST</option>
+                <option value="-21600">US CST</option>
+                <option value="-25200">US MST</option>
+                <option value="-32400">US PST</option>
+                <option value="0">UST</option>
+              </select>
+            </div>
+          </div>
+        </div> <!-- col -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="zip">Zipcode</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter zipcode (US)" id="zip" name="zip" maxlength="5" data-bind="value: zip">
+            </div>
+          </div>
+        </div> <!-- col -->
+      </div> <!-- row -->
+    </div> <!-- panel-body -->
+  </div> <!-- panel -->
+
+  <!-- Lamp devices section -->
+  <div class="panel panel-default">
+    <div class="panel-heading"><h2 class="panel-title">Devices</h2></div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="dev1">Hostname 1</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter hostname of lamp 1" id="dev1" name="dev1" maxlength="63" data-bind="value: dev1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="dev2">Hostname 2</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter hostname of lamp 2" id="dev2" name="dev2" maxlength="63" data-bind="value: dev2">
+            </div>
+          </div>
+        </div> <!-- col -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="dev3">Hostname 3</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter hostname of lamp 3" id="dev3" name="dev3" maxlength="63" data-bind="value: dev3">
+            </div>
+          </div>
+        </div> <!-- col -->
+      </div> <!-- row -->
+      <div class="row" style="margin-top: 20px;">
+        <div class="col-md-6">
+          <button type="button" class="btn btn-block btn-default" disabled="disabled" id="rgb-preview" data-bind="style : { background: rgb(), color: rgbComplement(), opacity: useRgb() ? 1 : 0.5 }, text: r() + ',' + g() + ',' + b()">&nbsp;</button>
+        </div> <!-- col -->
+        <div class="col-md-6">
+          <button type="button" class="btn btn-block btn-default" disabled="disabled" id="w-preview" data-bind="style : { background: hsl(), color: hslComplement(), opacity: useRgb() ? 0.5 : 1 }, text: w()">&nbsp;</button>
+        </div> <!-- col -->
+     </div> <!-- row -->
+      <div class="row" style="margin-top: 16px;">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="r">Preset Red</label>
+            <div class="col-sm-8">
+              <input type="range" class="form-control" id="r" name="r" min="0" max="255" data-bind="value: r, enable: useRgb">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="g">Preset Green</label>
+            <div class="col-sm-8">
+              <input type="range" class="form-control" id="g" name="g" min="0" max="255" data-bind="value: g, enable: useRgb">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="b">Preset Blue</label>
+            <div class="col-sm-8">
+              <input type="range" class="form-control" id="b" name="b" min="0" max="255" data-bind="value: b, enable: useRgb">
+            </div>
+          </div>
+        </div> <!-- col -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="w">Preset White</label>
+            <div class="col-sm-8">
+              <input type="range" class="form-control" id="w" name="w" min="0" max="255" data-bind="value: w, disable: useRgb()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="use-rgb" style="margin-top: 6px;">Colorspace</label>
+            <div class="col-sm-8">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn" id="use-rgb" name="use-rgb" data-bind="css: { 'btn-default': !useRgb(), 'btn-primary': useRgb() }, click: rgbOn">RGB</button>
+                <button type="button" class="btn btn-default" id="use-w" name="use-w" data-bind="css: { 'btn-default': useRgb(), 'btn-primary': !useRgb() }, click: rgbOff">White</button>
+              </div>
+            </div>
+          </div>
+        </div> <!-- col -->
+      </div> <!-- row -->
+    </div> <!-- panel-body -->
+  </div> <!-- panel -->
+
+  <button class="btn btn-default btn-large btn-primary" type="submit" data-bind="click: save">Update</button>
+</form>
+
+</div> <!-- container -->
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout-bootstrap/0.2.1/knockout-bootstrap.min.js"></script>
+
+<style type="text/css">
+#rgb-preview, #w-preview {
+  opacity: 1;
+  text-shadow: none;
+  color: #888888;
+}
+
+input[type=range], input[type=range]:focus {
+  border: 0;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+</style>
+
+
+<!-- Knockout data model -->
+<script>
+function SettingsModel() { 
+  self = this;
+
+  this.ssid = ko.observable("");
+  this.password = ko.observable("");
+  this.hostname = ko.observable("");
+
+  this.utcOffset = ko.observable(0);
+  this.zip = ko.observable("");
+
+  this.dev1 = ko.observable("");
+  this.dev2 = ko.observable("");
+  this.dev3 = ko.observable("");
+
+  this.r = ko.observable(255);
+  this.g = ko.observable(255);
+  this.b = ko.observable(255);
+  this.w = ko.observable(255);
+  this.useRgb = ko.observable(false);
+
+  this.toggleRgb = function() {
+    if (self.useRgb())
+      self.useRgb(false);
+    else
+      self.useRgb(true);
+  }
+  this.rgbOn = function() {
+    self.useRgb(true);
+  }
+  this.rgbOff = function() {
+    self.useRgb(false);
+  }
+
+  this.rgb = ko.computed(function() {
+    return "rgb(" + self.r() + ", " + self.g() + ", " + self.b() + ")";
+  });
+  this.rgbComplement = ko.computed(function() {
+    return "rgb(" + (255-self.r()) + ", " + (255-self.g()) + ", " + (255-self.b()) + ")";
+  });
+  this.hsl = ko.computed(function() {
+    return "hsl(60, 80%, " + (5 + 75*self.w()/255) +  "%)";
+  });
+  this.hslComplement = ko.computed(function() {
+    var wp = 255 - self.w();
+    return "rgb(" + wp + "," + wp + "," + wp + ")";
+  });
+
+  this.save = function() {
+    $.ajax("/api/update", {
+      type: "post",
+      contentType: "application/json",
+      data: ko.toJSON({
+        ssid: self.ssid(),
+        password: self.password(),
+        hostname: self.hostname(),
+
+        utcOffset: parseInt(self.utcOffset()),
+        zip: self.zip(),
+
+        dev: [ self.dev1(), self.dev2(), self.dev3() ],
+
+        r: self.r(),
+        g: self.g(),
+        b: self.b(),
+        w: self.useRgb() ? 0 : self.w()
+      }),
+      success: function(result) { alert("Settings saved.\nPower-cycle to take effect."); },
+      error: function (request, status, error) { alert("Error saving settings:\n" + request.responseText); }
+    });
+  }
+
+  $.getJSON("/api/settings", function(data) {
+    self.ssid(data.ssid);
+    self.password(data.password);
+    self.hostname(data.hostname);
+
+    self.utcOffset(data.utcOffset);
+    self.zip(data.zip);
+
+    self.dev1(data.dev[0]);
+    self.dev2(data.dev[1]);
+    self.dev3(data.dev[2]);
+
+
+    self.r(data.r);
+    self.g(data.g);
+    self.b(data.b);
+    self.w(data.w);
+    self.useRgb(data.w == 0);
+  });
+}
+
+var theModel = new SettingsModel();  // DEBUG
+
+ko.applyBindings(theModel);
+</script>
+
+</body>
+
+</html>

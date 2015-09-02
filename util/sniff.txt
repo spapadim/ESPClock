@@ -1,0 +1,46 @@
+Links:
+http://www.emessaging.biz/blog/?p=629  (most likely very similar to this)
+http://g.chasefox.net/zentyal/unifi/rgb-led  (same TCP port, but proto very different)
+
+Command:
+ngrep -t '' -d wlan1 -x src host 192.168.1.104 and tcp
+
+(where 192.168.1.104 is the IP of my iPad)
+
+
+Port: 5577
+
+--------------
+
+On:
+71 23 0f a3
+Full-bright:
+31 00 00 00 ff 0f 0f 4e
+
+Off:
+71 24 0f a4
+Full-dark:
+31 00 00 00 00 f0 0f 30
+
+
+byte0:   0x31 (opcode)
+byte1-3: R, G, B
+byte4:   (W)hite
+byte5:   Seems to be a mask: 0xf0 for RGB and 0x0f for (W)hite
+byte6:   constant 0x0f (?)
+byte7:   Checksum (mod 256), including opcode (0x31)
+
+
+--------------
+
+Green preset (RGB = 8, 27, 0)
+31 08 1b 00 00 f0 0f 53 
+
+Orange preset (RGB = 27, 8, 0)
+31 1b 08 00 00 f0 0f 53
+Then change brightness to 50 (R, G, B = 127, 40, 0):
+31 7f 28 00 00 f0 0f d7
+Then change brightness to 20 (R, G, B = 51, 16, 0):
+31 33 10 00 00 f0 0f 73
+Then change to green (R = 15, 51, 1):
+31 0f 33 01 00 f0 0f 73
