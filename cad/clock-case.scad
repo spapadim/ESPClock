@@ -29,7 +29,7 @@ foot_h = 1;
 foot_d = 5;
 
 cap_thk = thk;
-cap_slack = -0.1;
+cap_slack = 0.2; // PLA/Kossel: -0.1;
 cap_notch_w = 6;  // 7;
 cap_notch_d = 2.5;  // 2.5;
 cap_notch_thk = 2*thk/3;
@@ -75,9 +75,9 @@ rtc_xlen = 1.5 * inch;
 rtc_ylen = 0.85 * inch;
 
 
-// LiPo battery dimensions
-bat_w = 29.8;
-bat_thk = 5 + 0.1;
+// LiPo battery dimensions (500mAh, Adafruit or eBay)
+bat_w = 29.8 + 0.6;
+bat_thk = 5 + 0.25;
 bat_l = 35.5;  // not needed
 bat_clip_w = 7.5;
 
@@ -197,7 +197,7 @@ module case(feet = false, rtc = true, ribs = true) {
       if (rtc) {
         translate([-cos(30)*(tan(30)*side/2+r), tan(30)*side/2 + sin(30)*(tan(30)*side/2+r), 0]) rotate([0, 0, -120])  // Move to back face; ugly last-minute hack!
         for (pos_xy = rtc_standoff_pos)  
-          translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (3*thk + pos_xy[0])])
+          translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (2*thk + pos_xy[0])])
             rotate([90, 0, 0])
               standoff_cylinder(r1 = screw_scr_r + standoff_rtc_thk, 
                        r2 = screw_scr_r + standoff_rtc_thk + standoff_h, // 45deg slope
@@ -258,7 +258,7 @@ module case(feet = false, rtc = true, ribs = true) {
     if (rtc) {
         translate([-cos(30)*(tan(30)*side/2+r), tan(30)*side/2 + sin(30)*(tan(30)*side/2+r), 0]) rotate([0, 0, -120])  // Move to back face; ugly last-minute hack!
       for (pos_xy = rtc_standoff_pos)  
-        translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (3*thk + pos_xy[0])])
+        translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (2*thk + pos_xy[0])])
           rotate([90, 0, 0]){
             translate([0, 0, -1]) cylinder(r = screw_scr_r, h = standoff_h+thk+2, $fn=24);
             translate([0, 0, standoff_h+thk-(nut_scr_h+0.6)]) rotate([0, 0, 30]) cylinder(r = nut_scr_r, h = (nut_scr_h+0.6)+1, $fn=6);  // TODO: name 0.6 constant (extra sink to allow covering nuts with putty)
@@ -320,7 +320,7 @@ module fillet(h, r) {
 
 
 module battery_clip() {
-  toe_l = 1.5*thk;
+  toe_l = 0.66*thk;  // Anything more may collide with ribs
   cr = 1;
   difference() {
     union() {
