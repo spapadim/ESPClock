@@ -14,7 +14,7 @@ public:
   bool lampOn(uint8_t i);
   bool lampOff(uint8_t i);
   bool lampRGBW(uint8_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0x00);
-  bool lampPreset(uint8_t i);
+  bool lampPreset(uint8_t i, uint8_t i_preset);
 
 private:
   // We want connections as fast as possible, so cache IPs

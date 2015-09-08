@@ -91,13 +91,13 @@
       <div class="row">
         <div class="col-md-6">
           <div class="form-group">
-            <label class="col-sm-3" for="dev1">Hostname 1</label>
+            <label class="col-sm-3" for="dev1">Device 1</label>
             <div class="col-sm-8">
               <input type="text" class="form-control" placeholder="Enter hostname of lamp 1" id="dev1" name="dev1" maxlength="63" data-bind="value: dev1">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3" for="dev2">Hostname 2</label>
+            <label class="col-sm-3" for="dev2">Device 2</label>
             <div class="col-sm-8">
               <input type="text" class="form-control" placeholder="Enter hostname of lamp 2" id="dev2" name="dev2" maxlength="63" data-bind="value: dev2">
             </div>
@@ -105,14 +105,37 @@
         </div> <!-- col -->
         <div class="col-md-6">
           <div class="form-group">
-            <label class="col-sm-3" for="dev3">Hostname 3</label>
+            <label class="col-sm-3" for="dev3">Device 3</label>
             <div class="col-sm-8">
               <input type="text" class="form-control" placeholder="Enter hostname of lamp 3" id="dev3" name="dev3" maxlength="63" data-bind="value: dev3">
             </div>
           </div>
         </div> <!-- col -->
       </div> <!-- row -->
+
       <div class="row" style="margin-top: 20px;">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="col-sm-3" for="preset">Color preset</label>
+            <div class="col-sm-8">
+              <div class="btn-group" role="group" data-toggle="buttons">
+                <label class="btn btn-primary active" style="width: 3.5em;">
+                  <input type="radio" id="preset1" name="preset" value="0" checked data-bind="bsChecked: preset">1</button>
+                </label>
+                <label class="btn btn-primary" style="width: 3.5em;">
+                  <input type="radio" id="preset2" name="preset" value="1" data-bind="bsChecked: preset">2</button>
+                </label>
+                <label class="btn btn-primary" style="width: 3.5em;">
+                  <input type="radio" id="preset3" name="preset" value="2" data-bind="bsChecked: preset">3</button>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div> <!-- col -->
+        <div class="col-md-6"></div>
+      </div> <!-- row -->
+      
+      <div class="row" style="margin-top: 2px;" data-bind="with: currentPreset">
         <div class="col-md-6">
           <button type="button" class="btn btn-block btn-default" disabled="disabled" id="rgb-preview" data-bind="style : { background: rgb(), color: rgbComplement(), opacity: useRgb() ? 1 : 0.5 }, text: r() + ',' + g() + ',' + b()">&nbsp;</button>
         </div> <!-- col -->
@@ -120,22 +143,22 @@
           <button type="button" class="btn btn-block btn-default" disabled="disabled" id="w-preview" data-bind="style : { background: hsl(), color: hslComplement(), opacity: useRgb() ? 0.5 : 1 }, text: w()">&nbsp;</button>
         </div> <!-- col -->
      </div> <!-- row -->
-      <div class="row" style="margin-top: 16px;">
+      <div class="row" style="margin-top: 16px;" data-bind="with: currentPreset">
         <div class="col-md-6">
           <div class="form-group">
-            <label class="col-sm-3" for="r">Preset Red</label>
+            <label class="col-sm-3" for="r">Red</label>
             <div class="col-sm-8">
               <input type="range" class="form-control" id="r" name="r" min="0" max="255" data-bind="value: r, enable: useRgb">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3" for="g">Preset Green</label>
+            <label class="col-sm-3" for="g">Green</label>
             <div class="col-sm-8">
               <input type="range" class="form-control" id="g" name="g" min="0" max="255" data-bind="value: g, enable: useRgb">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3" for="b">Preset Blue</label>
+            <label class="col-sm-3" for="b">Blue</label>
             <div class="col-sm-8">
               <input type="range" class="form-control" id="b" name="b" min="0" max="255" data-bind="value: b, enable: useRgb">
             </div>
@@ -143,7 +166,7 @@
         </div> <!-- col -->
         <div class="col-md-6">
           <div class="form-group">
-            <label class="col-sm-3" for="w">Preset White</label>
+            <label class="col-sm-3" for="w">White</label>
             <div class="col-sm-8">
               <input type="range" class="form-control" id="w" name="w" min="0" max="255" data-bind="value: w, disable: useRgb()">
             </div>
@@ -187,28 +210,40 @@ input[type=range], input[type=range]:focus {
 }
 </style>
 
+<!-- http://stackoverflow.com/questions/20077475 -->
+<script>
+ko.bindingHandlers.bsChecked = {
+  init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+    var value = valueAccessor();
+    var newValueAccessor = function () {
+      return {
+        change: function () {
+          value(element.value);
+         }
+       }
+    };
+    ko.bindingHandlers.event.init(element, newValueAccessor, allBindingsAccessor, viewModel, bindingContext);
+  },
+  update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+    if ($(element).val() == ko.unwrap(valueAccessor())) {
+      setTimeout(function () {
+        $(element).closest('.btn').button('toggle');
+      }, 1); 
+    }
+  }
+}
+</script>
 
 <!-- Knockout data model -->
 <script>
-function SettingsModel() { 
-  self = this;
+function ColorModel(r, g, b, w, useRgb) {
+  var self = this;
 
-  this.ssid = ko.observable("");
-  this.password = ko.observable("");
-  this.hostname = ko.observable("");
-
-  this.utcOffset = ko.observable(0);
-  this.zip = ko.observable("");
-
-  this.dev1 = ko.observable("");
-  this.dev2 = ko.observable("");
-  this.dev3 = ko.observable("");
-
-  this.r = ko.observable(255);
-  this.g = ko.observable(255);
-  this.b = ko.observable(255);
-  this.w = ko.observable(255);
-  this.useRgb = ko.observable(false);
+  this.r = ko.observable(r || 255);
+  this.g = ko.observable(g || 255);
+  this.b = ko.observable(b || 255);
+  this.w = ko.observable(w ||255);
+  this.useRgb = ko.observable(useRgb || false);
 
   this.toggleRgb = function() {
     if (self.useRgb())
@@ -237,6 +272,38 @@ function SettingsModel() {
     return "rgb(" + wp + "," + wp + "," + wp + ")";
   });
 
+  this.toJS = function() {
+    var w = self.useRgb() ? 0 : self.w();
+    var r = self.r(), g = self.g(), b = self.b();
+    if (!self.useRgb() && self.w() == 0) {
+      r = g = b = 0;
+    }
+    return { 'r' : parseInt(r), 'g' : parseInt(g), 'b' : parseInt(b), 'w' : parseInt(w) };
+  };
+}
+// TODO: Use prototype
+  
+function SettingsModel() { 
+  var self = this;
+
+  this.ssid = ko.observable("");
+  this.password = ko.observable("");
+  this.hostname = ko.observable("");
+
+  this.utcOffset = ko.observable(0);
+  this.zip = ko.observable("");
+
+  this.dev1 = ko.observable("");
+  this.dev2 = ko.observable("");
+  this.dev3 = ko.observable("");
+
+  this.preset = ko.observable("0");
+  this._presets = ko.observableArray([ new ColorModel(), new ColorModel(), new ColorModel() ]);
+
+  this.currentPreset = ko.computed(function() {
+    return self._presets()[parseInt(self.preset())];
+  });
+
   this.save = function() {
     $.ajax("/api/update", {
       type: "post",
@@ -251,10 +318,7 @@ function SettingsModel() {
 
         dev: [ self.dev1(), self.dev2(), self.dev3() ],
 
-        r: self.r(),
-        g: self.g(),
-        b: self.b(),
-        w: self.useRgb() ? 0 : self.w()
+        presets : ko.utils.arrayMap(self._presets(), function (it) { return it.toJS(); })
       }),
       success: function(result) { alert("Settings saved.\nPower-cycle to take effect."); },
       error: function (request, status, error) { alert("Error saving settings:\n" + request.responseText); }
@@ -273,12 +337,9 @@ function SettingsModel() {
     self.dev2(data.dev[1]);
     self.dev3(data.dev[2]);
 
-
-    self.r(data.r);
-    self.g(data.g);
-    self.b(data.b);
-    self.w(data.w);
-    self.useRgb(data.w == 0);
+    self._presets(ko.utils.arrayMap(data.presets, function(it) {
+      return new ColorModel(it.r, it.g, it.b, it.w, (it.w == 0));
+    }));
   });
 }
 

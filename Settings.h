@@ -5,9 +5,11 @@
 #include <EEPROM.h>
 
 struct SettingsClass {
-  static const uint32_t FLASH_MAGIC = 0x5aa5e001;
+  static const uint32_t FLASH_MAGIC_R1 = 0x5aa5e001;  // Before adding multiple presets
+  static const uint32_t FLASH_MAGIC = 0x5aa5e002;
 
   static const uint8_t N_DEVICES = 3;
+  static const uint8_t N_PRESETS = 3;
   
   uint32_t magic;
   char ssid[32];  // ESP seems to have a 31-char limit
@@ -17,7 +19,11 @@ struct SettingsClass {
   int16_t utc_offset;  // in seconds
   char zip[6];
   char dev_hostname[N_DEVICES][64];
-  uint8_t preset_r, preset_g, preset_b, preset_w;  // R, G, B, W
+  // R, G, B, W
+  uint8_t preset_r[N_PRESETS];
+  uint8_t preset_g[N_PRESETS];
+  uint8_t preset_b[N_PRESETS];
+  uint8_t preset_w[N_PRESETS];
 
   void begin();
   void save();

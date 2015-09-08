@@ -9,6 +9,10 @@
 
 ESP8266WebServer WebServerClass::_server;
 
+const char TEXT_PLAIN[] PROGMEM = "text/plain";
+const char TEXT_HTML[] PROGMEM = "text/html";
+const char APPLICATION_JSON[] PROGMEM = "application/json";
+
 WebServerClass WebServer;
 
 #include "settings_html.h"  // Not really a header file, but Arduino build barfs with other extensions
@@ -16,16 +20,16 @@ WebServerClass WebServer;
 
 void WebServerClass::handleNotFound() {
   // TODO Make it pretty
-  _server.send(404, FPSTR("text/plain"), "Invalid webpage");
+  _server.send_P(404, TEXT_PLAIN, PSTR("Invalid webpage"));
 }
 
 void WebServerClass::handleBasicSetup() {
-  _server.send_P(200, "text/html", (const char*)basicsetup_html);
+  _server.send_P(200, TEXT_HTML, (const char*)basicsetup_html);
 }
 
 void WebServerClass::handleNetConfig() {
   if (!_server.hasArg("ssid") || !_server.hasArg("password")) {
-    _server.send(400, "text/plain", "Missing fields");
+    _server.send_P(400, TEXT_PLAIN, PSTR("Missing fields"));
     return;
   }
 
@@ -33,7 +37,7 @@ void WebServerClass::handleNetConfig() {
          password = _server.arg("password");
   if (ssid.length() > sizeof(Settings.ssid) - 1 ||
       password.length() > sizeof(Settings.password) - 1) {
-    _server.send(400, "text/plain", "Fields too long");
+    _server.send_P(400, TEXT_PLAIN, PSTR("Fields too long"));
     return;
   }
 
@@ -41,11 +45,11 @@ void WebServerClass::handleNetConfig() {
   strcpy(Settings.password, password.c_str());
   
   Settings.save();
-  _server.send(200, "text/plain", "Settings stored; please power cycle.");
+  _server.send_P(200, TEXT_PLAIN, PSTR("Settings stored; please power cycle."));
 }
 
 void WebServerClass::handleSettingsHtml() {
-  _server.send_P(200, "text/html", (const char*)settings_html);
+  _server.send_P(200, TEXT_HTML, (const char*)settings_html);
 }
 
 void WebServerClass::handleApiSettings() {
@@ -62,15 +66,19 @@ void WebServerClass::handleApiSettings() {
   for (int i = 0;  i < SettingsClass::N_DEVICES;  i++) {
     dev.add(Settings.dev_hostname[i]);
   }
-  s["r"] = Settings.preset_r;
-  s["g"] = Settings.preset_g;
-  s["b"] = Settings.preset_b;
-  s["w"] = Settings.preset_w;
+  JsonArray &pre = s.createNestedArray("presets");
+  for (int i = 0;  i< SettingsClass::N_PRESETS;  i++) {
+    JsonObject &p = pre.createNestedObject();
+    p["r"] = Settings.preset_r[i];
+    p["g"] = Settings.preset_g[i];
+    p["b"] = Settings.preset_b[i];
+    p["w"] = Settings.preset_w[i];
+  }
 
   // printTo(String) does not seem to work?
   //String data;
   //s.printTo(data);
-  char json_str[512];
+  char json_str[1024];
   s.printTo(json_str, sizeof(json_str));
   _server.send(200, "application/json", json_str);
 }
@@ -91,31 +99,23 @@ static bool validateNumberArgValue(int &val, const String &value, int min, int m
 void WebServerClass::handleApiUpdate() {
   // Check if JSON payload is present
   if (!_server.hasArg("plain")) {
-    _server.send(400, "text/plain", "Missing JSON payload");
+    _server.send_P(400, TEXT_PLAIN, PSTR("Missing JSON payload"));
     return;
   }
 
-  StaticJsonBuffer<2048> _json;  // Size 512 failed, although it was sufficient to construct object above
+  //StaticJsonBuffer<2048> _json;  // Size 512 failed, although it was sufficient to construct object above
+  DynamicJsonBuffer _json;
   JsonObject &s = _json.parseObject(_server.arg("plain"));
 
   if (!s.success()) {
-    _server.send(400, "text/plain", "JSON parse error");
+    _server.send_P(400, TEXT_PLAIN, PSTR("JSON parse error"));
     return;
   }
 
-  // Check that number arguments are valid
-  int utc_offset = s["utcOffset"].as<int>(),
-      r = s["r"].as<int>(),
-      g = s["g"].as<int>(),
-      b = s["b"].as<int>(),
-      w = s["w"].as<int>();
+  // Check that UTC offset is valid
+  int utc_offset = s["utcOffset"].as<int>();
   if (utc_offset < -12*3600 || utc_offset > 12*3600) {
-    _server.send(400, "text/plain", "Invalid UTC offset value");
-    return;
-  }
-  if (r < 0 || g < 0 || b < 0 || w < 0 || \
-      r > 255 || g > 255 || b > 255) {
-    _server.send(400, "text/plain", "Color values not within 0..255");
+    _server.send_P(400, TEXT_PLAIN, PSTR("Invalid UTC offset value"));
     return;
   }
 
@@ -123,8 +123,28 @@ void WebServerClass::handleApiUpdate() {
   JsonArray &dev = s["dev"].asArray();
   // TODO: Check if array is JsonArray::invalid()
   if (dev.size() > SettingsClass::N_DEVICES) {
-    _server.send(400, "text/plain", "Too many devices");
+    _server.send_P(400, TEXT_PLAIN, PSTR("Too many devices"));
     return;
+  }
+
+  // Check number of presets
+  JsonArray &pre = s["presets"].asArray();
+  if (pre.size() > SettingsClass::N_PRESETS) {
+    _server.send_P(400, TEXT_PLAIN, PSTR("Too many color presets"));
+  }
+  // Check that color values are valid
+  int pre_r[pre.size()], pre_g[pre.size()], pre_b[pre.size()], pre_w[pre.size()];
+  for (int i = 0;  i < pre.size();  i++) {  // TODO iterator
+    JsonObject &pre_i = pre[i].asObject();
+    pre_r[i] = pre_i["r"].as<int>();
+    pre_g[i] = pre_i["g"].as<int>();
+    pre_b[i] = pre_i["b"].as<int>();
+    pre_w[i] = pre_i["w"].as<int>();
+    if (pre_r[i] < 0 || pre_g[i] < 0 || pre_b[i] < 0 || pre_w[i] < 0 || \
+        pre_r[i] > 255 || pre_g[i] > 255 || pre_b[i] > 255 || pre_w[i] > 255) {
+      _server.send_P(400, TEXT_PLAIN, PSTR("Color values not within 0..255"));
+      return;
+    }
   }
 
   // Check length of string arguments (except device hostnames)
@@ -136,7 +156,7 @@ void WebServerClass::handleApiUpdate() {
        password.length() > sizeof(Settings.password) - 1 ||
        hostname.length() > sizeof(Settings.hostname) - 1 ||
        zip.length() > sizeof(Settings.zip) - 1 ) {
-      _server.send(400, "text/plain", "Argument too long");
+      _server.send_P(400, TEXT_PLAIN, PSTR("Argument too long"));
       return;
    }
    // Now check device hostnames
@@ -144,7 +164,7 @@ void WebServerClass::handleApiUpdate() {
    for (int i = 0;  i < dev.size();  i++) {  // TODO Use iterator, it's a linked list, this is O(N^2)
       dev_hostname[i] = dev[i].as<String>();
       if (dev_hostname[i].length() > sizeof(Settings.dev_hostname[0]) - 1) {
-        _server.send(400, "text/plain", "Device hostname too long");  // Might as well be specific
+        _server.send_P(400, TEXT_PLAIN, PSTR("Device hostname too long"));  // Might as well be specific
         return;
       }
    }
@@ -155,12 +175,18 @@ void WebServerClass::handleApiUpdate() {
   strcpy(Settings.hostname, hostname.c_str());
   Settings.utc_offset = (int16_t)utc_offset;
   strcpy(Settings.zip, zip.c_str());
-  for (int i = 0;  i < dev.size();  i++) {  // TODO Iterator here too
+  for (int i = 0;  i < dev.size();  i++) {
     strcpy(Settings.dev_hostname[i], dev_hostname[i].c_str());
+  }
+  for (int i = 0;  i < pre.size();  i++) {
+    Settings.preset_r[i] = (uint8_t)pre_r[i];
+    Settings.preset_g[i] = (uint8_t)pre_g[i];
+    Settings.preset_b[i] = (uint8_t)pre_b[i];
+    Settings.preset_w[i] = (uint8_t)pre_w[i];
   }
   
   Settings.save();
-  _server.send(200, "application/json", "{ \"success\": true }");
+  _server.send_P(200, APPLICATION_JSON, PSTR("{ \"success\": true }"));
 }
 
 void WebServerClass::begin() {

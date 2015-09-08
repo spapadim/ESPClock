@@ -66,6 +66,7 @@ static inline void update_backlight(bool on, time_t time_now = 0) {
 }
 
 static uint8_t selected_dev = 0;
+static uint8_t cur_preset = 0;
 
 static void touch_down_or_move_cb(uint16_t x, uint16_t y) {
   update_backlight(true);
@@ -117,7 +118,8 @@ static void touch_up_cb(uint16_t x, uint16_t y) {
       bool res = WiFiLamp.lampOn(selected_dev);
       //lcdDebugPrintf(0, "ON(%d) = %d", (int)selected_dev, (res ? 1 : 0));
     } else if (b_id == ID_PRESET) {
-      WiFiLamp.lampPreset(selected_dev);
+      WiFiLamp.lampPreset(selected_dev, cur_preset);
+      cur_preset = (cur_preset + 1) % SettingsClass::N_PRESETS;
     }
   }
 }

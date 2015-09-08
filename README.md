@@ -9,6 +9,8 @@ This was a week-long hack, to build a simple touchscreen clock, with the followi
 * Ability to control WiFi-connected LED lamps
 * Web-based configuration UI
 
+This project was partly inspired by the Chumby (remember that?) and by our old X10 light controller (remember *those*!?).  It probably costs the same as a used Chumby (and does less), but it's more fun this way. :)
+
 
 #### Dependencies
 * My rewrite of the Digole library

@@ -48,8 +48,11 @@ bool WiFiLampClass::lampRGBW(uint8_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t
   return _sendCommand(i, _cmd, sizeof(_cmd));
 }
 
-bool WiFiLampClass::lampPreset(uint8_t i) {
-  return lampRGBW(i, Settings.preset_r, Settings.preset_g, Settings.preset_b, Settings.preset_w);
+bool WiFiLampClass::lampPreset(uint8_t i, uint8_t ip) {
+  if (ip < 0 || ip >= SettingsClass::N_PRESETS) {
+    return false;
+  }
+  return lampRGBW(i, Settings.preset_r[ip], Settings.preset_g[ip], Settings.preset_b[ip], Settings.preset_w[ip]);
 }
 
 bool WiFiLampClass::_sendCommand(uint8_t i, const uint8_t *data, size_t len) {
