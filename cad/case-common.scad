@@ -1,26 +1,24 @@
-
-part = "case";  // [case,endcaps|caps,ribs,clip]
+inch = 25.4;
 
 thk = 2.5;
 
 r = 10;
 side = 55 - 2*r;
-h = 85;
+//h = 85;
+h = (lcd_model == "digole") ? 85 : 90;
 
 curved = true;
 curv_ofs = 25;  // larger: less curved
 
 rib_thk = 2.5;  // height of separate glue-on corner ribs
 
-inch = 25.4;
-
 screw_r = 2.9/2;  // M3 tap
 nut_r = 6.1/2;  // M3 corner-to-corner
 nut_h = 2.25;  // M3 normal
 //nut_hjam = 1.8;  // M3 jam nut
-screw_scr_r = 1.8/2;  // M2 tap
-nut_scr_r = 4.35/2; // M2 corner-to-corner
-nut_scr_h = 1.6; // M2 normal
+screw_rtc_r = 1.8/2;  // M2 tap
+nut_rtc_r = 4.35/2; // M2 corner-to-corner
+nut_rtc_h = 1.6; // M2 normal
 standoff_thk = 1.4; //1.6;
 standoff_rtc_thk = 1;
 standoff_h = 4;
@@ -43,31 +41,6 @@ thing_ylen = 1.0 * inch;
 thing_usb_mid_yofs = 0.3 * inch;
 thing_usb_edge_xofs = 0;
 thing_pcb_thk = 1.55;
-
-// Digole 2.4" IPS LCD dimensions
-lcd_standoff_pos = [ [ 2.0, 3.7], [ 2.0, 39.3],
-                     [67.8, 3.7], [67.8, 39.3] ];  // M2
-lcd_xlen = 70.0;
-lcd_ylen = 43.0;
-lcd_scr_xlen = 60 + 0; // +2 slack for ribbon cable moved to separate cutout
-lcd_scr_ylen = 43; // 42.5 ?  (match with _yofs)
-lcd_scr_xofs = 5;
-lcd_scr_yofs = 0; // 0.25 ?  (match with _ylen; also fix zero assumptions in code)
-lcd_touch_xlen = 49.0;
-lcd_touch_ylen = 36.8;
-lcd_touch_xofs = 7.8;
-lcd_touch_yofs = 3.4;
-lcd_scr_h = 3.35;
-
-// Ribbon cable cutout
-lcd_ribbon_yofs = 24.5;
-lcd_ribbon_ylen = 11;
-lcd_ribbon_xlen = 2;
-
-lcd_header_yofs = 0.6 * inch;  // approximate?
-lcd_header_ylen = 0.6 * inch;
-lcd_header_xlen = 3;
-lcd_header_h = lcd_scr_h - 2.1;
 
 // RTC dimensions
 rtc_standoff_pos = [ [0.350, 0.075], [1.350, 0.075], [0.350, 0.775] ] * inch; // M2
@@ -165,11 +138,9 @@ module standoff_cylinder(r1, r2, h, truncated = false) {
 }
 
 // TODO(no; will have visible holes on back): Add thing standoffs for mounting USB on other side, as well
+face_thk = 1.6; //0.8;
 module case(feet = false, rtc = true, ribs = true) {
-  face_thk = 1.6; //0.8;
 
-  lcd_yext = 6.25;  // yext==6.25mm leaves ~3.2mm for cap, when h==85mm
-  lcd_xext = 3;
   
   // Wall
   difference() {
@@ -183,8 +154,8 @@ module case(feet = false, rtc = true, ribs = true) {
       intersection() {
         shell(side, r + thk, h);
         scr_position(width = lcd_ylen)
-           translate([-lcd_scr_h - face_thk, -lcd_ylen/2-lcd_yext/2, -lcd_xext/2])  // move center to origin
-            cube([lcd_scr_h + face_thk + 20, lcd_ylen+lcd_yext, lcd_xlen+lcd_xext]); // TODO: properly adj x for curved
+           translate([-lcd_scr_h - face_thk, -lcd_ylen/2-lcd_yext/2, -lcd_xext_top])  // move center to origin
+            cube([lcd_scr_h + face_thk + 20, lcd_ylen+lcd_yext, lcd_xlen+lcd_xext_top+lcd_xext_bottom]); // TODO: properly adj x for curved
       }
       // Thing standoff positives
       for (pos_xy = thing_standoff_pos)
@@ -199,8 +170,8 @@ module case(feet = false, rtc = true, ribs = true) {
         for (pos_xy = rtc_standoff_pos)  
           translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (2*thk + pos_xy[0])])
             rotate([90, 0, 0])
-              standoff_cylinder(r1 = screw_scr_r + standoff_rtc_thk, 
-                       r2 = screw_scr_r + standoff_rtc_thk + standoff_h, // 45deg slope
+              standoff_cylinder(r1 = screw_rtc_r + standoff_rtc_thk, 
+                       r2 = screw_rtc_r + standoff_rtc_thk + standoff_h, // 45deg slope
                        h = standoff_h, $fn=24);          
       }
       
@@ -228,11 +199,13 @@ module case(feet = false, rtc = true, ribs = true) {
         translate([0, lcd_ribbon_yofs, 0]) 
           cube([lcd_scr_h + 1, lcd_ribbon_ylen, lcd_scr_xlen + lcd_ribbon_xlen]);
         // MCU pin header extra cutout
-        translate([0, lcd_header_yofs, -lcd_header_xlen]) 
-          cube([lcd_header_h + 1, lcd_header_ylen, lcd_scr_xlen + lcd_header_xlen]);
-        // PenIRQ pin extra cutout; TODO: name constants 3 and 3.5 below
-        translate([0, lcd_ribbon_yofs, 0]) 
-          cube([lcd_header_h + 1, 3, lcd_scr_xlen + lcd_ribbon_xlen + 3.5]);
+        translate([0, lcd_header_yofs, lcd_header_scr_xofs-lcd_header_xlen]) 
+          cube([lcd_header_h + 1, lcd_header_ylen, lcd_header_xlen]);
+        if (lcd_model == "digole") {
+          // PenIRQ pin extra cutout; TODO: name constants 3 and 3.5 below
+          translate([0, lcd_ribbon_yofs, 0]) 
+            cube([lcd_header_h + 1, 3, lcd_scr_xlen + lcd_ribbon_xlen + 3.5]);
+        }
       }
     }
     // Screen mounting holes
@@ -260,8 +233,8 @@ module case(feet = false, rtc = true, ribs = true) {
       for (pos_xy = rtc_standoff_pos)  
         translate([rtc_ylen/2 - pos_xy[1], standoff_h, h - (2*thk + pos_xy[0])])
           rotate([90, 0, 0]){
-            translate([0, 0, -1]) cylinder(r = screw_scr_r, h = standoff_h+thk+2, $fn=24);
-            translate([0, 0, standoff_h+thk-(nut_scr_h+0.6)]) rotate([0, 0, 30]) cylinder(r = nut_scr_r, h = (nut_scr_h+0.6)+1, $fn=6);  // TODO: name 0.6 constant (extra sink to allow covering nuts with putty)
+            translate([0, 0, -1]) cylinder(r = screw_rtc_r, h = standoff_h+thk+2, $fn=24);
+            translate([0, 0, standoff_h+thk-(nut_rtc_h+0.6)]) rotate([0, 0, 30]) cylinder(r = nut_rtc_r, h = (nut_rtc_h+0.6)+1, $fn=6);  // TODO: name 0.6 constant (extra sink to allow covering nuts with putty)
           }
       }
 
@@ -290,6 +263,15 @@ module endcap(usb = false, notch = false) {
       // USB cutout
       translate([thing_usb_mid_yofs - thing_ylen/2, -r + standoff_h + thing_pcb_thk, -1])
         usb_micro(thk+2, slack = usb_slack);
+    }
+    // Slim down as necessary
+    if (!usb) {
+      // TODO: Do the same for USB cap; currently unnecessary
+      translate([0, 0, h]) mirror([0, 0, -1])
+        scr_position(width = lcd_ylen)
+           translate([-lcd_scr_h - face_thk, -lcd_ylen/2-lcd_yext/2, -lcd_xext_top])  // move center to origin
+            cube([lcd_scr_h + face_thk + 20, lcd_ylen+lcd_yext, lcd_xlen+lcd_xext_top+lcd_xext_bottom]); // TODO: properly adj x for curved
+      
     }
     if (notch) {
       // Finger notch for easier removal
@@ -351,7 +333,9 @@ module battery_clip() {
 }
 
 if (part == "case") {
-  case(feet = false, ribs = false);
+  case(feet = false, ribs = false, rtc = (lcd_model != "ili9341"));
+} else if (part == "caseribs" || part == "ribcase") {
+  case(feet = false, ribs = true, rtc = (lcd_model != "ili9341"));
 } else if (part == "endcaps" || part == "caps") {
   //translate([+0.5*side, 0, 0]) case();
   translate([+0.5*side, 0, thk]) rotate([0, 180, 120]) endcap(usb = true, notch = true);
