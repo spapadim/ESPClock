@@ -21,21 +21,24 @@ void SettingsClass::begin() {
 
   // Populate defaults if flash magic is unexpected
   if (magic != FLASH_MAGIC) {
-    if (magic != FLASH_MAGIC_R1) {
-      bzero(this, sizeof(*this));
+    if (magic != FLASH_MAGIC_R2) {
+      if (magic != FLASH_MAGIC_R1) {
+        bzero(this, sizeof(*this));
 #if defined(ESP8266)
-      uint8_t mac[WL_MAC_ADDR_LENGTH];
-      WiFi.macAddress(mac);
-      sprintf(hostname, "espclock%02x", mac[WL_MAC_ADDR_LENGTH-1]);
+        uint8_t mac[WL_MAC_ADDR_LENGTH];
+        WiFi.macAddress(mac);
+        sprintf(hostname, "espclock%02x", mac[WL_MAC_ADDR_LENGTH-1]);
 #else
-      strcpy(hostname, "espclock");
+        strcpy(hostname, "espclock");
 #endif
-      strcpy(ntp_hostname, "us.pool.ntp.org");
+        strcpy(ntp_hostname, "us.pool.ntp.org");
+      }
+      memset(preset_r, 0xff, sizeof(preset_r));
+      memset(preset_g, 0xff, sizeof(preset_g));
+      memset(preset_b, 0xff, sizeof(preset_b));
+      memset(preset_w, 0xff, sizeof(preset_w));
     }
-    memset(preset_r, 0xff, sizeof(preset_r));
-    memset(preset_g, 0xff, sizeof(preset_g));
-    memset(preset_b, 0xff, sizeof(preset_b));
-    memset(preset_w, 0xff, sizeof(preset_w));
+    bzero(owm_apikey, sizeof(owm_apikey));
 
     magic = FLASH_MAGIC;
     save();  // Is this really necessary?

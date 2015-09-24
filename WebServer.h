@@ -11,11 +11,22 @@ public:
   void begin();
   void loop();
 
+  static void urlDecode(char *decoded, const char *encoded, size_t n);
+
 private:
+  static void _sendJsonStatus(bool success);
+
   static void handleNotFound();
 
   static void handleBasicSetup();
   static void handleNetConfig();
+
+  static void handleControlHtml();
+  static void handleApiDevOn();
+  static void handleApiDevOff();
+  static void handleApiDevPreset();
+  static void handleApiDevRGBW();
+  static void handleApiDevParams();
 
   static void handleSettingsHtml();
   static void handleApiSettings();
@@ -27,4 +38,3 @@ private:
 extern WebServerClass WebServer;
 
 #endif  // ESPClockWebServer_h
-

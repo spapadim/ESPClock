@@ -61,7 +61,7 @@
           <div class="form-group">
             <label class="col-sm-3" for="tz">Timezone</label>
             <div class="col-sm-8">
-              <select class="form-control" id="utc-offset", name="utc-offset" data-bind="value: utcOffset">
+              <select class="form-control" id="utc-offset" name="utc-offset" data-bind="value: utcOffset">
                 <option value="-14400">US EDT</option>
                 <option value="-18000">US EST</option>
                 <option value="-21600">US CST</option>
@@ -77,6 +77,12 @@
             <label class="col-sm-3" for="zip">Zipcode</label>
             <div class="col-sm-8">
               <input type="text" class="form-control" placeholder="Enter zipcode (US)" id="zip" name="zip" maxlength="5" data-bind="value: zip">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3" for="owm-apikey">OWM API key</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" placeholder="Enter OpenWeatherMaps API key" id="owm-apikey" name="owm-apikey" maxlength="34" data-bind="value: owmApiKey">
             </div>
           </div>
         </div> <!-- col -->
@@ -281,7 +287,7 @@ function ColorModel(r, g, b, w, useRgb) {
     return { 'r' : parseInt(r), 'g' : parseInt(g), 'b' : parseInt(b), 'w' : parseInt(w) };
   };
 }
-// TODO: Use prototype
+/* TODO: Use prototype */
   
 function SettingsModel() { 
   var self = this;
@@ -292,6 +298,7 @@ function SettingsModel() {
 
   this.utcOffset = ko.observable(0);
   this.zip = ko.observable("");
+  this.owmApiKey = ko.observable("");
 
   this.dev1 = ko.observable("");
   this.dev2 = ko.observable("");
@@ -315,6 +322,7 @@ function SettingsModel() {
 
         utcOffset: parseInt(self.utcOffset()),
         zip: self.zip(),
+        owmApiKey: self.owmApiKey(),
 
         dev: [ self.dev1(), self.dev2(), self.dev3() ],
 
@@ -332,6 +340,7 @@ function SettingsModel() {
 
     self.utcOffset(data.utcOffset);
     self.zip(data.zip);
+    self.owmApiKey(data.owmApiKey);
 
     self.dev1(data.dev[0]);
     self.dev2(data.dev[1]);
@@ -343,7 +352,7 @@ function SettingsModel() {
   });
 }
 
-var theModel = new SettingsModel();  // DEBUG
+var theModel = new SettingsModel();  /* DEBUG */
 
 ko.applyBindings(theModel);
 </script>

@@ -20,12 +20,14 @@
 #include "NTPClient.h"
 #include "WiFiLamp.h"
 #include "WebServer.h"
+#include "OWMClient.h"
 
 
 static const char DEFAULT_AP_PASSWORD[] = "esp";
 static const char WIFI_CONNECT_TIMEOUT = 10;  // in seconds
 
 static const time_t NTP_SYNC_INTERVAL = 3600;  // in seconds
+static const time_t OWM_UPDATE_INTERVAL = 1800;  // in seconds
 
 extern Label lbl_time, lbl_date, lbl_splash_top, lbl_splash_bottom;
 extern Button btn_on, btn_preset, btn_off;
@@ -176,6 +178,10 @@ static void time_cb(time_t time) {
   update_time(true);
 }
 
+static void weather_cb(const OWMClient::WeatherInfo &conditions) {
+  // TODO
+}
+
 
 void setup() {
   char buf[40];
@@ -233,6 +239,7 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     NTPClient.begin(time_cb);
+    OWM.begin(weather_cb);
     WiFiLamp.begin();
 
     // Clear splashscreen and show main UI
@@ -246,6 +253,7 @@ void setup() {
       (*b)->draw();
 
     NTPClient.startRequest();
+    OWM.startUpdate();
   } else {
     // Display brief configuration instructions
     lbl_splash_top.setLabel("Please connect to ESP_xxx");
@@ -263,12 +271,17 @@ void loop() {
 
   if (WiFi.status() == WL_CONNECTED) {
     NTPClient.loop();
+    OWM.loop();
 
-    static time_t last = 0;
+    static time_t last_ntp = 0, last_owm = 0;
     time_t t_now = now();
-    if (t_now - last > NTP_SYNC_INTERVAL) {
+    if (t_now - last_ntp > NTP_SYNC_INTERVAL) {
       NTPClient.startRequest();
-      last = t_now;
+      last_ntp = t_now;
+    }
+    if (t_now - last_ntp > OWM_UPDATE_INTERVAL) {
+      OWM.startUpdate();
+      last_owm = t_now;
     }
   }
 }

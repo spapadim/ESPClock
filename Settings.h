@@ -6,7 +6,8 @@
 
 struct SettingsClass {
   static const uint32_t FLASH_MAGIC_R1 = 0x5aa5e001;  // Before adding multiple presets
-  static const uint32_t FLASH_MAGIC = 0x5aa5e002;
+  static const uint32_t FLASH_MAGIC_R2 = 0x5aa5e002;  // Before adding OpenWeatherMaps API key
+  static const uint32_t FLASH_MAGIC = 0x5aa5e003;
 
   static const uint8_t N_DEVICES = 3;
   static const uint8_t N_PRESETS = 3;
@@ -24,6 +25,7 @@ struct SettingsClass {
   uint8_t preset_g[N_PRESETS];
   uint8_t preset_b[N_PRESETS];
   uint8_t preset_w[N_PRESETS];
+  char owm_apikey[36];
 
   void begin();
   void save();
