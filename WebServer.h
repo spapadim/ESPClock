@@ -22,6 +22,10 @@ private:
   static void handleBasicSetup();
   static void handleNetConfig();
 
+  static void handleUpdate();
+  static void handleDoUpdate();
+  static void handleFileUpload();
+
   static void handleControlHtml();
   static void handleApiDevOn();
   static void handleApiDevOff();
