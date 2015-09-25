@@ -11,7 +11,7 @@ This was a week-long hack, to build a simple touchscreen clock, with the followi
 * Ability to control WiFi-connected LED lamps
 * Web-based configuration UI
 
-This project was partly inspired by the Chumby (remember that?) and by our old X10 light controller (remember *those*!?).  It probably costs the same as a used Chumby (and does less), but it's more fun this way. :)  In retrospect, the cost could also be taken down to $13.
+This project was partly inspired by the Chumby (remember that?) and by our old X10 light controller (remember *those*!?).  Current iteration's cost is probably comparable to a used Chumby (which also has a lot more features), but it's more fun this way. :)  However, the cost could be taken down to ~$10.
 
 
 #### Dependencies
@@ -29,12 +29,4 @@ Also, for flashing fonts, you will need the original DigoleSerial library (haven
 * Depending how fancy you want to get with print finishing: XTC-3D resin and/or Bondo putty, spray paint and primer
 
 More details can be found in the [making-of post](http://bitquill.net/blog/esp8266-light-controller-clock).
-
-#### TODO
-This is a tentative list of ideas that could be implemented, time permitting:
-* Extend web UI to control lights as well
-* Sort out the AP->AP+STA->STA transitions and make initial setup work more smoothly (now it's either AP or STA, until reboot)
-* Weather info display (e.g., via OpenWeatherMap, which returns a reasonable-size response?)
-* Expose more settings in web UI (?)
-* OTA reflash and more modular architecture
 
