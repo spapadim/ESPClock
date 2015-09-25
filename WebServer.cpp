@@ -50,6 +50,7 @@ void WebServerClass::urlDecode(char *decoded, const char *encoded, size_t n) {
 
 #include "settings_html.h"  // Not really a header file, but Arduino build barfs with other extensions
 #include "basicsetup_html.h"  // Ditto
+#include "update_html.h"
 
 void WebServerClass::_sendJsonStatus(bool success) {
   if (success) {
@@ -57,6 +58,10 @@ void WebServerClass::_sendJsonStatus(bool success) {
   } else {
     _server.send_P(200, APPLICATION_JSON, PSTR("{ \"success\": true }"));        
   }  
+}
+
+void WebServerClass::_sendConnectionHeader() {
+  _server.sendHeader("Connection", "close");
 }
 
 void WebServerClass::handleNotFound() {
@@ -90,6 +95,45 @@ void WebServerClass::handleNetConfig() {
   
   Settings.save();
   _server.send_P(200, TEXT_PLAIN, PSTR("Settings stored; please power cycle."));
+}
+
+void WebServerClass::handleUpdate() {
+  _server.send_P(200, TEXT_HTML, (const char*)update_html);
+}
+
+void WebServerClass::handleDoUpdate() {
+  // From WebUpdate example sketch in esp8266/Arduino
+  _sendConnectionHeader();  // TODO Send this in all responses
+  char buf[128];
+  if (Update.hasError()) {
+    snprintf_P(buf, sizeof(buf), PSTR("Firmware update failed with error code %d"), Update.getError());
+  } else {
+    strncpy_P(buf, PSTR("Firmware update successful; rebooting!"), sizeof(buf));    
+  }
+  _server.send_P(200, TEXT_PLAIN, buf);
+  delay(1000);
+  ESP.restart();
+}
+
+void WebServerClass::handleFileUpload() {
+  // From WebUpdate example sketch in esp8266/Arduino
+  if (_server.uri() != "/doupdate") {
+    return;
+  }
+  if (Update.hasError()) {
+    return;  // Ignore any (further) received data
+  }
+  HTTPUpload &upload = _server.upload();
+  if (upload.status == UPLOAD_FILE_START) {
+    WiFiUDP::stopAll();
+    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+    Update.begin(maxSketchSpace);
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
+    Update.write(upload.buf, upload.currentSize);
+  } else if (upload.status == UPLOAD_FILE_END) {
+    Update.end(true); // true to set the size to the current progress
+  }
+  yield();
 }
 
 void WebServerClass::handleControlHtml() {
@@ -315,9 +359,12 @@ void WebServerClass::begin() {
   } else {
     // Internet is not available, cannot get Bootstrap, etc
     // so fall back to a very basic webpage
-    _server.on("/", handleBasicSetup);
-    _server.on("/netconfig", handleNetConfig);    
+    _server.on("/", HTTP_GET, handleBasicSetup);
+    _server.on("/netconfig", HTTP_POST, handleNetConfig);    
   }
+  _server.on("/update", HTTP_GET, handleUpdate);
+  _server.on("/doupdate", HTTP_POST, handleDoUpdate);
+  _server.onFileUpload(handleFileUpload);
   _server.onNotFound(handleNotFound);
 
   _server.begin();

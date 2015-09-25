@@ -15,6 +15,7 @@ const char OWMClient::API_APIKEY_FIELD[] PROGMEM = ",us&units=metric&&APPID=";
 
 void OWMClient::begin(owm_cb_t cb) {
   _cb = cb;
+  _conditions.time = 0;
   // TODO(?) Do hostname -> IP lookup here?
 }
 
@@ -81,6 +82,7 @@ void OWMClient::loop() {
         break;
       }
     }
+    yield();
   }
 }
 

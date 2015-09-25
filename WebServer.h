@@ -15,6 +15,7 @@ public:
 
 private:
   static void _sendJsonStatus(bool success);
+  static void _sendConnectionHeader();
 
   static void handleNotFound();
 
